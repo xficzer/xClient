@@ -6,7 +6,7 @@ import com.google.gson.reflect.TypeToken;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.CloudRenderMode;
-import net.minecraft.client.option.ParticlesMode;
+import net.minecraft.client.option.SimpleOption;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,11 +23,25 @@ public class ModuleManager {
 
     public static List<Module> all() { return MODULES; }
 
+    // Ustawia ostatnia wartosc enuma (dla czasteczek = MINIMAL) i przywraca stara po wylaczeniu.
+    private static <T extends Enum<T>> Module lastValue(String name, SimpleOption<T> opt) {
+        final List<T> prev = new ArrayList<>();
+        return new Module(name,
+                () -> {
+                    prev.clear();
+                    prev.add(opt.getValue());
+                    T[] all = opt.getValue().getDeclaringClass().getEnumConstants();
+                    opt.setValue(all[all.length - 1]);
+                },
+                () -> {
+                    if (!prev.isEmpty()) opt.setValue(prev.get(0));
+                });
+    }
+
     public static void init() {
         MinecraftClient mc = MinecraftClient.getInstance();
 
         final int[] prevFps = {120};
-        final ParticlesMode[] prevParticles = {ParticlesMode.ALL};
         final CloudRenderMode[] prevClouds = {CloudRenderMode.FAST};
         final int[] prevView = {12};
 
@@ -35,9 +49,7 @@ public class ModuleManager {
                 () -> { prevFps[0] = mc.options.getMaxFps().getValue(); mc.options.getMaxFps().setValue(60); },
                 () -> mc.options.getMaxFps().setValue(prevFps[0])));
 
-        MODULES.add(new Module("Minimalne czasteczki",
-                () -> { prevParticles[0] = mc.options.getParticles().getValue(); mc.options.getParticles().setValue(ParticlesMode.MINIMAL); },
-                () -> mc.options.getParticles().setValue(prevParticles[0])));
+        MODULES.add(lastValue("Minimalne czasteczki", mc.options.getParticles()));
 
         MODULES.add(new Module("Bez chmur",
                 () -> { prevClouds[0] = mc.options.getCloudRenderMode().getValue(); mc.options.getCloudRenderMode().setValue(CloudRenderMode.OFF); },
