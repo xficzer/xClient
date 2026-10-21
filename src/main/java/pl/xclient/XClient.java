@@ -1,6 +1,7 @@
 package pl.xclient;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.option.KeyBinding;
@@ -16,6 +17,9 @@ public class XClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ModuleManager.init();
+
+        // Zapisane moduły włączamy dopiero, gdy gra ma już wczytane ustawienia.
+        ClientLifecycleEvents.CLIENT_STARTED.register(client -> ModuleManager.load());
 
         openGui = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.xclient.open_gui",
