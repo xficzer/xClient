@@ -3,10 +3,11 @@
   "id": "xclient",
   "version": "${version}",
   "name": "xClient",
-  "description": "Optymalizacja i własne GUI pod Right Shift.",
+  "description": "Optymalizacja, GUI pod Right Shift i kolizja graczy na serwerze.",
   "authors": ["you"],
-  "environment": "client",
+  "environment": "*",
   "entrypoints": {
+    "main": ["pl.xclient.XCollide"],
     "client": ["pl.xclient.XClient"]
   },
   "depends": {
