@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class ModuleManager {
     private static final List<Module> MODULES = new ArrayList<>();
@@ -23,18 +24,18 @@ public class ModuleManager {
 
     public static List<Module> all() { return MODULES; }
 
-    // Ustawia ostatnia wartosc enuma (dla czasteczek = MINIMAL) i przywraca stara po wylaczeniu.
-    private static <T extends Enum<T>> Module lastValue(String name, SimpleOption<T> opt) {
+    private static <T extends Enum<T>> Module lastValue(String name, Supplier<SimpleOption<T>> opt) {
         final List<T> prev = new ArrayList<>();
         return new Module(name,
                 () -> {
+                    SimpleOption<T> o = opt.get();
                     prev.clear();
-                    prev.add(opt.getValue());
-                    T[] all = opt.getValue().getDeclaringClass().getEnumConstants();
-                    opt.setValue(all[all.length - 1]);
+                    prev.add(o.getValue());
+                    T[] all = o.getValue().getDeclaringClass().getEnumConstants();
+                    o.setValue(all[all.length - 1]);
                 },
                 () -> {
-                    if (!prev.isEmpty()) opt.setValue(prev.get(0));
+                    if (!prev.isEmpty()) opt.get().setValue(prev.get(0));
                 });
     }
 
@@ -49,7 +50,7 @@ public class ModuleManager {
                 () -> { prevFps[0] = mc.options.getMaxFps().getValue(); mc.options.getMaxFps().setValue(60); },
                 () -> mc.options.getMaxFps().setValue(prevFps[0])));
 
-        MODULES.add(lastValue("Minimalne czasteczki", mc.options.getParticles()));
+        MODULES.add(lastValue("Minimalne czasteczki", () -> mc.options.getParticles()));
 
         MODULES.add(new Module("Bez chmur",
                 () -> { prevClouds[0] = mc.options.getCloudRenderMode().getValue(); mc.options.getCloudRenderMode().setValue(CloudRenderMode.OFF); },
@@ -58,11 +59,9 @@ public class ModuleManager {
         MODULES.add(new Module("Render distance 8",
                 () -> { prevView[0] = mc.options.getViewDistance().getValue(); mc.options.getViewDistance().setValue(8); },
                 () -> mc.options.getViewDistance().setValue(prevView[0])));
-
-        load();
     }
 
-    private static void load() {
+    public static void load() {
         try {
             if (!Files.exists(FILE)) return;
             Map<String, Boolean> data = GSON.fromJson(Files.readString(FILE),
