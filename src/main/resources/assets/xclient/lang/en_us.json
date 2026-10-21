@@ -1,1 +1,4 @@
-src/main/resources/assets/xclient/lang/en_us.json
+{
+  "key.xclient.open_gui": "Open xClient menu",
+  "category.xclient": "xClient"
+}
