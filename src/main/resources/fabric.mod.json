@@ -1,1 +1,18 @@
-src/main/resources/fabric.mod.json
+{
+  "schemaVersion": 1,
+  "id": "xclient",
+  "version": "${version}",
+  "name": "xClient",
+  "description": "Optymalizacja i własne GUI pod Right Shift.",
+  "authors": ["you"],
+  "environment": "client",
+  "entrypoints": {
+    "client": ["pl.xclient.XClient"]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.4",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
